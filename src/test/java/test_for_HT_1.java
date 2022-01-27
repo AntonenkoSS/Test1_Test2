@@ -28,9 +28,22 @@ public class test_for_HT_1 {
     private String SEARCH_AFTER = "//input[@placeholder='Search']";
     private String EXPECTED_NAME_ARTICLE_WITH_KEYWORD = "//a[@class='ssrcss-atl1po-PromoLink e1f5wbog0']/span/p";
     private String EXPECTED_FOOTER = "//div[@class='ws-c-social-slice__secondary-links gel-layout gel-layout__item']";
+    private String EXPECTED_FOOTER_SIGNIN = "//li[@class='footer__item']";
     private String BUTTON_X = "//button[@aria-label='Close']";
-
-
+    private String CORONA = "//li[contains(@class, 'gs-u-float-left nw-c-nav__wide-menuitem-container')]//a[@href='/news/coronavirus']";
+    private String CORONA_STORY = "//li[@class='gs-o-list-ui__item--flush gel-long-primer gs-u-display-block gs-u-float-left nw-c-nav__secondary-menuitem-container']/a[@class='nw-o-link'][@href='/news/have_your_say']";
+    private String SIGN_IN = "//a[@id='idcta-link']";
+    private String EMAIL_FIELD = "//input[@type='email']";
+    private String PASS_FIELD = "//input[@type='password']";
+    private String CORRECT_EMAIL = "ssantonenko@gmail.com";
+    private String INCORRECT_EMAIL = "ssantonenko";
+    private String CORRECT_PASSWORD = "password";
+    private String MODAL = "//*[@class='tp-modal-open']";
+    private String SIGN_BUTTON = "//button[@class='button button--full-width']";
+    private String ANSWER = "//p[@class='form-message__text']/span/span";
+    private String EXPECTED_ANSWER = "Sorry, that password isn't valid";
+    private String EXPECTED_ANSWER_2 = "Sorry";
+    
     @BeforeTest
     public void profileSetUp() {
         System.setProperty("webdriver.chrome.driver", "src\\main\\resources\\chromedriver.exe");
@@ -47,10 +60,8 @@ public class test_for_HT_1 {
     public void checkTestPart1BBC1() throws InterruptedByTimeoutException {
         WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-
         WebDriverWait wait = new WebDriverWait(driver, 30);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(FIRST_ARTICLE_XPATH)));
-
         WebElement elementNews = driver.findElement(xpath(FIRST_ARTICLE_XPATH));
         String elementText = elementNews.getText();
         assertEquals(FIRST_ARTICLE_NAME, elementText);
@@ -62,17 +73,12 @@ public class test_for_HT_1 {
         element.click();
         WebDriverWait wait = new WebDriverWait(driver, 30);
         wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(FIRST_ARTICLE_XPATH)));
-
         List<WebElement> elementsArticle = driver.findElements(By.xpath(SECONDARY_ARTICLES));
         List<String> titlesArticlesList = new ArrayList<>();
         titlesArticlesList.add("US rejects Russian demand to bar Ukraine from Nato");
         titlesArticlesList.add("Biden to nominate black woman to top US court");
         titlesArticlesList.add("UK PM vows to fight amid parties row");
-
-        List<String> textsElements = elementsArticle
-                .stream()
-                .map(WebElement::getText)
-                .collect(Collectors.toList());
+        List<String> textsElements = elementsArticle.stream().map(WebElement::getText).collect(Collectors.toList());
         assertTrue(textsElements.containsAll(titlesArticlesList));
     }
 
@@ -85,16 +91,14 @@ public class test_for_HT_1 {
         wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
         WebElement elementFirstArticle = driver.findElement(xpath(FIRST_ARTICLE_XPATH_A));
         elementFirstArticle.click();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath("//*[@class='tp-modal-open']")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(MODAL)));
         WebElement elementX = driver.findElement(xpath(BUTTON_X));
         elementX.click();
-
         String url = driver.getCurrentUrl();
             //https://www.bbc.com/news/world-us-canada-60149024
             int index1 = url.indexOf("/", 22);
             int index2 = url.indexOf("-", 22);
             String keyword = url.substring(index1+1,index2);
-
         WebElement elementNewsBack = driver.findElement(xpath(LINK_TO_NEWS_FROM_FIRST_ARTICLE));
         elementNewsBack.click();        //back to news
         wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
@@ -104,62 +108,52 @@ public class test_for_HT_1 {
             assertEquals("World", elementNewsArticles.get(0).getText());
         }
 
-
-
     @Test(priority = 4)
     public void checkTest1Part2BBC1() {
-        WebElement element = driver.findElement(xpath("//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']"));
+        WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-
-        WebElement elementCorona = driver.findElement(xpath("//li[contains(@class, 'gs-u-float-left nw-c-nav__wide-menuitem-container')]//a[@href='/news/coronavirus']"));
+        WebDriverWait wait = new WebDriverWait(driver, 80);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
+        WebElement elementCorona = driver.findElement(xpath(CORONA));
         elementCorona.click();
-
-        WebElement elementCoronaStory = driver.findElement(xpath("//li[@class='gs-o-list-ui__item--flush gel-long-primer gs-u-display-block gs-u-float-left nw-c-nav__secondary-menuitem-container']/a[@class='nw-o-link'][@href='/news/have_your_say']"));
+        WebElement elementCoronaStory = driver.findElement(xpath(CORONA_STORY));
         elementCoronaStory.click();
-
-        WebElement elementSignIn = driver.findElement(xpath("//a[@id='idcta-link']"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(SIGN_IN)));
+        WebElement elementSignIn = driver.findElement(xpath(SIGN_IN));
         elementSignIn.click();
-
-        driver.findElement(xpath("//input[@type='email']")).sendKeys("ssantonenko@gmail.com");
-        driver.findElement(xpath("//input[@type='password']")).sendKeys("password");
-
-        WebElement elementSignInButton = driver.findElement(xpath("//button[@class='button button--full-width']"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER_SIGNIN)));
+        driver.findElement(xpath(EMAIL_FIELD)).sendKeys(CORRECT_EMAIL);
+        driver.findElement(xpath(PASS_FIELD)).sendKeys(CORRECT_PASSWORD);
+        WebElement elementSignInButton = driver.findElement(xpath(SIGN_BUTTON));
         elementSignInButton.click();
-
-        WebElement webElementAns = driver.findElement(xpath("//p[@class='form-message__text']/span/span"));
-        assertTrue(webElementAns.getText().contains("Sorry, that password isn't valid"));
+        WebElement webElementAns = driver.findElement(xpath(ANSWER));
+        assertTrue(webElementAns.getText().contains(EXPECTED_ANSWER));
     }
 
     @Test(priority = 5)
     public void checkTest2Part2BBC1() {
-        WebElement element = driver.findElement(xpath("//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']"));
+        WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-
-        WebElement elementCorona = driver.findElement(xpath("//li[contains(@class, 'gs-u-float-left nw-c-nav__wide-menuitem-container')]//a[@href='/news/coronavirus']"));
+        WebDriverWait wait = new WebDriverWait(driver, 80);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
+        WebElement elementCorona = driver.findElement(xpath(CORONA));
         elementCorona.click();
-
-        WebElement elementCoronaStory = driver.findElement(xpath("//li[@class='gs-o-list-ui__item--flush gel-long-primer gs-u-display-block gs-u-float-left nw-c-nav__secondary-menuitem-container']/a[@class='nw-o-link'][@href='/news/have_your_say']"));
+        WebElement elementCoronaStory = driver.findElement(xpath(CORONA_STORY));
         elementCoronaStory.click();
-
-        WebElement elementSignIn = driver.findElement(xpath("//a[@id='idcta-link']"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(SIGN_IN)));
+        WebElement elementSignIn = driver.findElement(xpath(SIGN_IN));
         elementSignIn.click();
-
-        driver.findElement(xpath("//input[@type='email']")).sendKeys("ssantonenko");
-        driver.findElement(xpath("//input[@type='password']")).sendKeys("password");
-
-        WebElement elementSignInButton = driver.findElement(xpath("//button[@class='button button--full-width']"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER_SIGNIN)));
+        driver.findElement(xpath(EMAIL_FIELD)).sendKeys(INCORRECT_EMAIL);
+        driver.findElement(xpath(PASS_FIELD)).sendKeys(CORRECT_PASSWORD);
+        WebElement elementSignInButton = driver.findElement(xpath(SIGN_BUTTON));
         elementSignInButton.click();
-
-        WebElement webElementAns = driver.findElement(xpath("//p[@class='form-message__text']/span/span"));
-        assertTrue(webElementAns.getText().contains("Sorry"));
+        WebElement webElementAns = driver.findElement(xpath(ANSWER));
+        assertTrue(webElementAns.getText().contains(EXPECTED_ANSWER_2));
     }
-
-
-
+    
     @AfterMethod
     public void tearDown() {
         driver.close();// driver close
     }
-
-
 }
