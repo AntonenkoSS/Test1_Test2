@@ -1,7 +1,4 @@
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -10,8 +7,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.nio.channels.InterruptedByTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.openqa.selenium.By.xpath;
 import static org.testng.Assert.assertEquals;
@@ -20,6 +19,17 @@ import static org.testng.Assert.assertTrue;
 public class test_for_HT_1 {
 
     private WebDriver driver;
+    private String LINK_TO_NEWS = "//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']";
+    private String LINK_TO_NEWS_FROM_FIRST_ARTICLE = "//li[@class='ssrcss-so3uhw-GlobalNavigationProduct eki2hvo15']/a[@href='https://www.bbc.com/news']";
+    private String FIRST_ARTICLE_XPATH_A = "//a[@class='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-paragon-bold nw-o-link-split__anchor']";
+    private String FIRST_ARTICLE_XPATH = "//div[@class='gs-c-promo-body gs-u-display-none gs-u-display-inline-block@m gs-u-mt@xs gs-u-mt0@m gel-1/3@m']//a[@class='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-paragon-bold nw-o-link-split__anchor']/h3[@class='gs-c-promo-heading__title gel-paragon-bold nw-o-link-split__text']";
+    private String FIRST_ARTICLE_NAME = "Prince Andrew denies he was close to Maxwell";
+    private String SECONDARY_ARTICLES = "//a[@class='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-pica-bold nw-o-link-split__anchor']/h3";
+    private String SEARCH_AFTER = "//input[@placeholder='Search']";
+    private String EXPECTED_NAME_ARTICLE_WITH_KEYWORD = "//a[@class='ssrcss-atl1po-PromoLink e1f5wbog0']/span/p";
+    private String EXPECTED_FOOTER = "//div[@class='ws-c-social-slice__secondary-links gel-layout gel-layout__item']";
+    private String BUTTON_X = "//button[@aria-label='Close']";
+
 
     @BeforeTest
     public void profileSetUp() {
@@ -28,57 +38,72 @@ public class test_for_HT_1 {
 
     @BeforeMethod
     public void testsSetUp() {
-        driver = new ChromeDriver();               //создали экзаемпляр хром драйвера
-        driver.manage().window().maximize();       //открыли браузер на весь экран (по умолчанию на процентов 80 открывает
-        driver.get("https://www.bbc.com");         //открыли сайт  BBC1
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        driver.get("https://www.bbc.com");         //open  BBC1
     }
 
     @Test(priority = 1)
-    public void checkTestPart1BBC1() {
-        WebElement element = driver.findElement(xpath("//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']"));
+    public void checkTestPart1BBC1() throws InterruptedByTimeoutException {
+        WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-        WebElement elementNews = driver.findElement(xpath("//div[@class='gs-c-promo-body gs-u-display-none gs-u-display-inline-block@m gs-u-mt@xs gs-u-mt0@m gel-1/3@m']//a[@class='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-paragon-bold nw-o-link-split__anchor']/h3[@class='gs-c-promo-heading__title gel-paragon-bold nw-o-link-split__text']"));
+
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(FIRST_ARTICLE_XPATH)));
+
+        WebElement elementNews = driver.findElement(xpath(FIRST_ARTICLE_XPATH));
         String elementText = elementNews.getText();
-        assertEquals("Tonga says tsunami was 'unprecedented disaster'", elementText);
+        assertEquals(FIRST_ARTICLE_NAME, elementText);
     }
 
     @Test(priority = 2)
-    public void checkTest2Part1BBC1() {
-        String[] articles  = new String[43];
-        articles[0] = "Tonga tsunami: Before and after eruption";
-        articles[1] = "Nobody told me drinks event broke rules - Johnson";
-        articles[2] = "Saudis warned of jail time for posting rumours";
-        // amount = 43 articles
-        WebElement element = driver.findElement(xpath("//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']"));
+    public void checkTest2Part1BBC1(){
+        WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-        List<WebElement> elementNewsArticles = driver.findElements(xpath("//a[@class='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-pica-bold nw-o-link-split__anchor']"));
-        for (int i=0; i<elementNewsArticles.size(); i++){
-            assertEquals(articles[i], elementNewsArticles.get(i).getText());
-        }
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(FIRST_ARTICLE_XPATH)));
 
-        int actualElementsSize = elementNewsArticles.size();
-        assertEquals(actualElementsSize, 43);
+        List<WebElement> elementsArticle = driver.findElements(By.xpath(SECONDARY_ARTICLES));
+        List<String> titlesArticlesList = new ArrayList<>();
+        titlesArticlesList.add("US rejects Russian demand to bar Ukraine from Nato");
+        titlesArticlesList.add("Biden to nominate black woman to top US court");
+        titlesArticlesList.add("UK PM vows to fight amid parties row");
+
+        List<String> textsElements = elementsArticle
+                .stream()
+                .map(WebElement::getText)
+                .collect(Collectors.toList());
+        assertTrue(textsElements.containsAll(titlesArticlesList));
     }
 
 
     @Test(priority = 3)
     public void checkTest3Part1BBC1() {
-        WebElement element = driver.findElement(xpath("//div[@id='orb-nav-links']//li[@class='orb-nav-newsdotcom']/a[@href='https://www.bbc.com/news']"));
+        WebElement element = driver.findElement(xpath(LINK_TO_NEWS));
         element.click();
-        WebDriverWait wait = new WebDriverWait(driver, 30);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@data-entityid='container-top-stories#1']")));
+        WebDriverWait wait = new WebDriverWait(driver, 80);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
+        WebElement elementFirstArticle = driver.findElement(xpath(FIRST_ARTICLE_XPATH_A));
+        elementFirstArticle.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath("//*[@class='tp-modal-open']")));
+        WebElement elementX = driver.findElement(xpath(BUTTON_X));
+        elementX.click();
 
         String url = driver.getCurrentUrl();
-            //https://www.bbc.com/news/world-asia-60034179
+            //https://www.bbc.com/news/world-us-canada-60149024
             int index1 = url.indexOf("/", 22);
             int index2 = url.indexOf("-", 22);
-            String keyword = url.substring(index1,index2);
+            String keyword = url.substring(index1+1,index2);
 
-        driver.findElement(xpath("//input[@placeholder='Search']")).sendKeys(keyword);
+        WebElement elementNewsBack = driver.findElement(xpath(LINK_TO_NEWS_FROM_FIRST_ARTICLE));
+        elementNewsBack.click();        //back to news
+        wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
+        driver.findElement(xpath(SEARCH_AFTER)).sendKeys(keyword, Keys.ENTER);   //sendKeys(text, Keys.ENTER)
+        //wait.until(ExpectedConditions.visibilityOfElementLocated(xpath(EXPECTED_FOOTER)));
+        List<WebElement> elementNewsArticles = driver.findElements(xpath(EXPECTED_NAME_ARTICLE_WITH_KEYWORD));
+            assertEquals("World", elementNewsArticles.get(0).getText());
+        }
 
-        List<WebElement> elementNewsArticles = driver.findElements(xpath("//a[@class='ssrcss-atl1po-PromoLink e1f5wbog0']/span/p"));
-            assertEquals("Word", elementNewsArticles.get(0).getText());
-    }
 
 
     @Test(priority = 4)
